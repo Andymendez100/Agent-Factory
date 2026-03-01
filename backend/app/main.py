@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -7,11 +8,18 @@ from app.api.platforms import router as platforms_router
 from app.api.runs import router as runs_router
 from app.api.tasks import router as tasks_router
 from app.api.websocket import router as ws_router
+from app.db.seed import seed_demo_data
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # Startup — seed demo data (idempotent)
+    try:
+        await seed_demo_data()
+    except Exception:
+        logger.warning("Seed failed (DB may not be ready yet)", exc_info=True)
     yield
     # Shutdown
 
