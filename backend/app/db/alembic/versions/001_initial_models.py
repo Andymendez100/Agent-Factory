@@ -21,7 +21,7 @@ def upgrade() -> None:
     # Run status enum
     run_status = postgresql.ENUM(
         "pending", "running", "completed", "failed", "cancelled",
-        name="run_status", create_type=True,
+        name="run_status", create_type=False,
     )
     run_status.create(op.get_bind(), checkfirst=True)
 
