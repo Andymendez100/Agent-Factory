@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}KPI Dashboard — BPO Employee Portal{% endblock %}
+
+{% block content %}
+<h1>KPI Dashboard</h1>
+
+<div class="card">
+    <h2>Daily Aggregate Statistics (Last 14 Days)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Headcount</th>
+                <th>Total Calls</th>
+                <th>Avg Hours</th>
+                <th>Avg Active Time %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in kpi_data | reverse %}
+            <tr>
+                <td>{{ row.date }}</td>
+                <td>{{ row.headcount }}</td>
+                <td>{{ row.total_calls }}</td>
+                <td>{{ row.avg_hours }}</td>
+                <td>
+                    {% if row.avg_active_pct < 0.90 %}
+                    <span class="badge badge-red">{{ "%.0f" | format(row.avg_active_pct * 100) }}%</span>
+                    {% elif row.avg_active_pct < 0.93 %}
+                    <span class="badge badge-yellow">{{ "%.0f" | format(row.avg_active_pct * 100) }}%</span>
+                    {% else %}
+                    <span class="badge badge-green">{{ "%.0f" | format(row.avg_active_pct * 100) }}%</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

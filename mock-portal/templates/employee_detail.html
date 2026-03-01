@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}{{ employee.name }} — BPO Employee Portal{% endblock %}
+
+{% block content %}
+<p style="margin-bottom: 8px;">
+    <a href="/employees">&larr; Back to Employee Directory</a>
+</p>
+
+<h1>{{ employee.name }}</h1>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="value">{{ employee.employee_id }}</div>
+        <div class="label">Employee ID</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ employee.department }}</div>
+        <div class="label">Department</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ "%.0f" | format(avg_active_pct * 100) }}%</div>
+        <div class="label">Avg Active Time</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ avg_hours }}h</div>
+        <div class="label">Avg Hours / Day</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ total_calls }}</div>
+        <div class="label">Total Calls (14d)</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Daily Active Time Stats</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Hours Logged</th>
+                <th>Active Time %</th>
+                <th>Calls Handled</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stat in employee.daily_stats | reverse %}
+            <tr>
+                <td>{{ stat.date }}</td>
+                <td>{{ stat.hours_logged }}</td>
+                <td>
+                    {% if stat.active_time_pct < 0.90 %}
+                    <span class="badge badge-red">{{ "%.0f" | format(stat.active_time_pct * 100) }}%</span>
+                    {% elif stat.active_time_pct < 0.93 %}
+                    <span class="badge badge-yellow">{{ "%.0f" | format(stat.active_time_pct * 100) }}%</span>
+                    {% else %}
+                    <span class="badge badge-green">{{ "%.0f" | format(stat.active_time_pct * 100) }}%</span>
+                    {% endif %}
+                </td>
+                <td>{{ stat.calls_handled }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

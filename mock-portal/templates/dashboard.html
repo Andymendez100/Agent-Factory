@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — BPO Employee Portal{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="value">{{ employee_count }}</div>
+        <div class="label">Active Employees</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">4</div>
+        <div class="label">Departments</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">14</div>
+        <div class="label">Days Tracked</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Quick Links</h2>
+    <ul style="list-style: none; padding: 0;">
+        <li style="padding: 12px 0; border-bottom: 1px solid #edf2f7;">
+            <a href="/employees" style="font-size: 15px; font-weight: 500;">Employee Directory</a>
+            <span style="color: #718096; font-size: 13px; display: block; margin-top: 2px;">
+                View all employees, departments, and individual performance
+            </span>
+        </li>
+        <li style="padding: 12px 0;">
+            <a href="/kpi" style="font-size: 15px; font-weight: 500;">KPI Dashboard</a>
+            <span style="color: #718096; font-size: 13px; display: block; margin-top: 2px;">
+                Daily aggregate statistics — calls, hours, active time
+            </span>
+        </li>
+    </ul>
+</div>
+{% endblock %}
