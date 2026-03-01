@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Platform } from "../types";
+import type { AgentRun, AgentTask, Platform } from "../types";
 
 /** Axios instance pre-configured for the backend API. */
 const api = axios.create({
@@ -51,4 +51,55 @@ export async function updatePlatform(
 
 export async function deletePlatform(id: string): Promise<void> {
   await api.delete(`/platforms/${id}`);
+}
+
+// ---------------------------------------------------------------------------
+// Task API
+// ---------------------------------------------------------------------------
+
+export interface TaskCreatePayload {
+  name: string;
+  goal: string;
+  platform_ids: string[];
+  constraints: Record<string, unknown> | null;
+}
+
+export type TaskUpdatePayload = Partial<TaskCreatePayload>;
+
+export async function fetchTasks(): Promise<AgentTask[]> {
+  const { data } = await api.get<AgentTask[]>("/tasks");
+  return data;
+}
+
+export async function fetchTask(id: string): Promise<AgentTask> {
+  const { data } = await api.get<AgentTask>(`/tasks/${id}`);
+  return data;
+}
+
+export async function createTask(
+  payload: TaskCreatePayload,
+): Promise<AgentTask> {
+  const { data } = await api.post<AgentTask>("/tasks", payload);
+  return data;
+}
+
+export async function updateTask(
+  id: string,
+  payload: TaskUpdatePayload,
+): Promise<AgentTask> {
+  const { data } = await api.put<AgentTask>(`/tasks/${id}`, payload);
+  return data;
+}
+
+export async function deleteTask(id: string): Promise<void> {
+  await api.delete(`/tasks/${id}`);
+}
+
+// ---------------------------------------------------------------------------
+// Run API
+// ---------------------------------------------------------------------------
+
+export async function triggerRun(taskId: string): Promise<AgentRun> {
+  const { data } = await api.post<AgentRun>(`/tasks/${taskId}/run`);
+  return data;
 }
