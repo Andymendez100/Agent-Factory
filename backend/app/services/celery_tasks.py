@@ -20,6 +20,7 @@ from app.models.agent_run import AgentRun, RunStatus
 from app.models.agent_task import AgentTask
 from app.models.step_log import StepLog
 from app.services.celery_app import celery_app
+from app.services.redis_pubsub import publish_step, publish_run_complete
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +124,18 @@ async def _execute_run(run_id: str):
                                 session.add(step_log)
                                 step_index += 1
 
+                                # Publish step to Redis for live WS streaming
+                                await publish_step(run_id, {
+                                    "step_index": step_log.step_index,
+                                    "step_type": step_log.step_type,
+                                    "tool_name": step_log.tool_name,
+                                    "tool_input": step_log.tool_input,
+                                    "tool_output": step_log.tool_output,
+                                    "agent_reasoning": step_log.agent_reasoning,
+                                    "screenshot_path": step_log.screenshot_path,
+                                    "duration_ms": step_log.duration_ms,
+                                })
+
                                 # Track final answer (last agent message without tool calls)
                                 if (
                                     node_name == "agent"
@@ -143,6 +156,10 @@ async def _execute_run(run_id: str):
                     run.final_answer = final_answer or "Agent completed without a final answer."
                     await session.commit()
 
+                    await publish_run_complete(
+                        run_id, "completed", final_answer=run.final_answer
+                    )
+
                 finally:
                     await context.close()
 
@@ -153,6 +170,8 @@ async def _execute_run(run_id: str):
             run.error = str(e)
             run.finished_at = datetime.now(timezone.utc)
             await session.commit()
+
+            await publish_run_complete(run_id, "failed", error=str(e))
 
 
 def _create_step_log(
