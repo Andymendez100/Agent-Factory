@@ -7,7 +7,7 @@ import pytest
 import pytest_asyncio
 from cryptography.fernet import Fernet
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import JSON, String, event
+from sqlalchemy import JSON, String, TypeDecorator, event
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from unittest.mock import patch
@@ -20,7 +20,23 @@ TEST_KEY = Fernet.generate_key().decode()
 
 # Register UUID adapter for SQLite
 sqlite3.register_adapter(uuid.UUID, lambda u: str(u))
-sqlite3.register_converter("CHAR", lambda b: b.decode())
+
+
+class StringUUID(TypeDecorator):
+    """SQLite-compatible UUID type: stores as String(36), accepts UUID objects."""
+
+    impl = String(36)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            return str(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return uuid.UUID(value) if not isinstance(value, uuid.UUID) else value
+        return value
 
 
 @pytest.fixture(scope="session")
@@ -37,7 +53,7 @@ def _patch_pg_types_for_sqlite():
             if isinstance(col.type, JSONB):
                 col.type = JSON()
             elif isinstance(col.type, UUID):
-                col.type = String(36)
+                col.type = StringUUID()
 
 
 @pytest_asyncio.fixture
