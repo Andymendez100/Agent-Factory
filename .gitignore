@@ -1,21 +1,6 @@
-# Ralph generated files (inside .ralph/ subfolder)
-.ralph/.call_count
-.ralph/.last_reset
-.ralph/.exit_signals
-.ralph/status.json
-.ralph/.ralph_session
-.ralph/.ralph_session_history
-.ralph/.claude_session_id
-.ralph/.response_analysis
-.ralph/.circuit_breaker_state
-.ralph/.circuit_breaker_history
-.ralph/.account_rotation_state
-
-# Ralph logs and generated docs
-.ralph/logs/*
-!.ralph/logs/.gitkeep
-.ralph/docs/generated/*
-!.ralph/docs/generated/.gitkeep
+# Ralph (development tooling — not part of the project)
+.ralph/
+.ralphrc
 
 # General logs
 *.log
@@ -56,5 +41,4 @@ backend/app/db/alembic/versions/__pycache__/
 *.swp
 *.swo
 
-# Ralph backup directories (created by migration)
 .ralph_backup_*
