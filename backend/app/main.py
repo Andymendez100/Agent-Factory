@@ -15,19 +15,65 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup — seed demo data (idempotent)
+    """Application lifespan: seed demo data on startup."""
     try:
         await seed_demo_data()
+        logger.info("Demo data seeded successfully")
     except Exception:
         logger.warning("Seed failed (DB may not be ready yet)", exc_info=True)
     yield
-    # Shutdown
 
+
+DESCRIPTION = """\
+**Agent Factory** is a No-Code AI Agent Platform for BPO operations.
+
+Users define a **goal** and the AI agent autonomously decides how to accomplish
+it using available tools — browser automation, data analysis, and alerting.
+
+## Key Concepts
+
+- **Platforms** — Internal BPO tools with stored credentials (e.g. employee portals)
+- **Tasks** — A goal + which platforms to use + constraints
+- **Runs** — A single execution of a task by the AI agent (LangGraph ReAct loop)
+- **Steps** — Individual agent reasoning and tool call events during a run
+
+## Architecture
+
+The agent uses a **ReAct pattern** powered by LangGraph:
+`Agent thinks → picks tool → executes → observes → repeats → final answer`
+
+Live execution is streamed via **WebSocket** to the React frontend,
+where steps appear as nodes on a React Flow canvas in real-time.
+"""
 
 app = FastAPI(
     title="Agent Factory",
-    description="No-Code AI Agent Platform for BPO Operations",
-    version="0.1.0",
+    summary="No-Code AI Agent Platform for BPO Operations",
+    description=DESCRIPTION,
+    version="1.0.0",
+    license_info={
+        "name": "MIT",
+    },
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {
+            "name": "platforms",
+            "description": "Manage BPO platform configurations and credentials.",
+        },
+        {
+            "name": "tasks",
+            "description": "Define agent tasks with goals, platforms, and constraints.",
+        },
+        {
+            "name": "runs",
+            "description": "Trigger and monitor agent execution runs.",
+        },
+        {
+            "name": "websocket",
+            "description": "Real-time streaming of agent execution events.",
+        },
+    ],
     lifespan=lifespan,
 )
 
@@ -45,6 +91,7 @@ app.include_router(tasks_router)
 app.include_router(ws_router)
 
 
-@app.get("/health")
+@app.get("/health", tags=["system"])
 async def health_check():
+    """Returns the health status of the API server."""
     return {"status": "healthy"}
