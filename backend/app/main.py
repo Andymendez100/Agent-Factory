@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.platforms import router as platforms_router
 from app.api.runs import router as runs_router
 from app.api.tasks import router as tasks_router
+from app.api.websocket import router as ws_router
 
 
 @asynccontextmanager
@@ -33,6 +34,7 @@ app.add_middleware(
 app.include_router(platforms_router)
 app.include_router(runs_router)
 app.include_router(tasks_router)
+app.include_router(ws_router)
 
 
 @app.get("/health")
