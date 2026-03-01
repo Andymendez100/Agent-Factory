@@ -4,6 +4,9 @@ import type { AgentRun, AgentTask, RunStatus, StepEvent } from "../types";
 import { fetchRun, fetchTask, cancelRun } from "../api/client";
 import { useWebSocket } from "../hooks/useWebSocket";
 import LiveGraph from "../components/LiveGraph/LiveGraph";
+import AgentThinking from "../components/AgentThinking/AgentThinking";
+import StepLogTable from "../components/StepLogTable/StepLogTable";
+import ScreenshotViewer from "../components/ScreenshotViewer/ScreenshotViewer";
 
 /** Map backend step logs to the StepEvent shape used by our components. */
 function stepLogToEvent(s: AgentRun["steps"][number]): StepEvent {
@@ -343,25 +346,11 @@ export default function RunMonitorPage() {
               )}
           </div>
 
-          {/* Agent Reasoning Card */}
-          <div className="rounded-xl border border-surface-700 bg-surface-800 p-5">
-            <h2 className="text-xs font-medium uppercase tracking-wider text-text-muted mb-3">
-              Agent Reasoning
-            </h2>
-            {latestReasoning ? (
-              <div className="rounded-lg bg-surface-900 px-3 py-2.5">
-                <p className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-accent-300">
-                  {latestReasoning}
-                </p>
-              </div>
-            ) : (
-              <p className="text-xs text-text-muted italic">
-                {isRunning
-                  ? "Waiting for agent to reason..."
-                  : "No reasoning captured."}
-              </p>
-            )}
-          </div>
+          {/* Agent Reasoning */}
+          <AgentThinking text={latestReasoning} isLive={isRunning} />
+
+          {/* Screenshot Viewer */}
+          <ScreenshotViewer steps={allSteps} isRunning={isRunning} />
 
           {/* Final Answer / Error */}
           {(finalAnswer || liveError) && (
@@ -403,86 +392,7 @@ export default function RunMonitorPage() {
           </div>
 
           {/* Step Log Table */}
-          <div className="rounded-xl border border-surface-700 bg-surface-800">
-            <div className="border-b border-surface-700 px-5 py-3">
-              <h2 className="text-xs font-medium uppercase tracking-wider text-text-muted">
-                Step Log
-              </h2>
-            </div>
-            {allSteps.length === 0 ? (
-              <div className="px-5 py-8 text-center text-xs text-text-muted">
-                {isRunning
-                  ? "Steps will appear here as the agent works..."
-                  : "No steps recorded."}
-              </div>
-            ) : (
-              <div className="max-h-[300px] overflow-y-auto">
-                <table className="w-full text-xs">
-                  <thead className="sticky top-0 bg-surface-800">
-                    <tr className="border-b border-surface-700 text-left">
-                      <th className="px-4 py-2 font-medium text-text-muted">
-                        #
-                      </th>
-                      <th className="px-4 py-2 font-medium text-text-muted">
-                        Type
-                      </th>
-                      <th className="px-4 py-2 font-medium text-text-muted">
-                        Tool / Action
-                      </th>
-                      <th className="px-4 py-2 font-medium text-text-muted">
-                        Summary
-                      </th>
-                      <th className="px-4 py-2 text-right font-medium text-text-muted">
-                        Duration
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-surface-700/50">
-                    {allSteps.map((s) => (
-                      <tr
-                        key={s.step_index}
-                        className="hover:bg-surface-700/30 transition-colors"
-                      >
-                        <td className="px-4 py-2 font-mono text-text-muted">
-                          {s.step_index}
-                        </td>
-                        <td className="px-4 py-2">
-                          <span
-                            className={`inline-block rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                              s.step_type === "agent_thinking"
-                                ? "bg-accent-500/15 text-accent-400"
-                                : "bg-success/15 text-success"
-                            }`}
-                          >
-                            {s.step_type === "agent_thinking"
-                              ? "THINK"
-                              : "TOOL"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 font-medium text-text-primary">
-                          {s.step_type === "agent_thinking"
-                            ? "Agent"
-                            : s.tool_name ?? "--"}
-                        </td>
-                        <td className="max-w-[260px] truncate px-4 py-2 text-text-secondary">
-                          {s.step_type === "agent_thinking"
-                            ? s.agent_reasoning?.slice(0, 80) ?? "--"
-                            : s.tool_input
-                              ? JSON.stringify(s.tool_input).slice(0, 80)
-                              : "--"}
-                        </td>
-                        <td className="px-4 py-2 text-right font-mono text-text-muted">
-                          {s.duration_ms > 0
-                            ? `${(s.duration_ms / 1000).toFixed(1)}s`
-                            : "--"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          <StepLogTable steps={allSteps} isRunning={isRunning} />
         </div>
       </div>
     </div>
