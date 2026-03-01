@@ -103,3 +103,23 @@ export async function triggerRun(taskId: string): Promise<AgentRun> {
   const { data } = await api.post<AgentRun>(`/tasks/${taskId}/run`);
   return data;
 }
+
+export async function fetchRuns(
+  skip = 0,
+  limit = 20,
+): Promise<AgentRun[]> {
+  const { data } = await api.get<AgentRun[]>("/runs", {
+    params: { skip, limit },
+  });
+  return data;
+}
+
+export async function fetchRun(runId: string): Promise<AgentRun> {
+  const { data } = await api.get<AgentRun>(`/runs/${runId}`);
+  return data;
+}
+
+export async function cancelRun(runId: string): Promise<AgentRun> {
+  const { data } = await api.post<AgentRun>(`/runs/${runId}/cancel`);
+  return data;
+}
